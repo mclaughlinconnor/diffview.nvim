@@ -138,6 +138,7 @@ M.defaults = {
       { "n", "<leader>ct",  actions.conflict_choose("theirs"),      { desc = "Choose the THEIRS version of a conflict" } },
       { "n", "<leader>cb",  actions.conflict_choose("base"),        { desc = "Choose the BASE version of a conflict" } },
       { "n", "<leader>ca",  actions.conflict_choose("all"),         { desc = "Choose all the versions of a conflict" } },
+      { "n", "<leader>cm",  actions.try_magic_merge(),              { desc = "Attempt to automatically merge all conflicts" } },
       { "n", "dx",          actions.conflict_choose("none"),        { desc = "Delete the conflict region" } },
       { "n", "<leader>cO",  actions.conflict_choose_all("ours"),    { desc = "Choose the OURS version of a conflict for the whole file" } },
       { "n", "<leader>cT",  actions.conflict_choose_all("theirs"),  { desc = "Choose the THEIRS version of a conflict for the whole file" } },

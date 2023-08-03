@@ -1,4 +1,5 @@
 require("diffview.bootstrap")
+local him = require("diffview.api.haxe-ij-merge")
 
 local async = require("diffview.async")
 local lazy = require("diffview.lazy")
@@ -340,6 +341,65 @@ local function diff_copy_target(kind)
     end
 
     if bufnr then return bufnr end
+  end
+end
+
+function M.try_magic_merge()
+  return function()
+    local view = lib.get_current_view()
+
+    if view and view:instanceof(StandardView.__get()) then
+      ---@cast view StandardView
+      local main = view.cur_layout:get_main_win()
+      local curfile = main.file
+
+      if main:is_valid() and curfile:is_valid() then
+        local _, cur = vcs_utils.parse_conflicts(
+          api.nvim_buf_get_lines(curfile.bufnr, 0, -1, false),
+          main.id
+        )
+
+        if cur then
+          local content = {}
+
+          local base = cur.base.content
+          if base == nil then
+            return vim.notify("Missing BASE, use diff3")
+          end
+
+          local function concat(t)
+            return table.concat(t, [[\n]])
+          end
+
+          local ours_string = concat(cur.ours.content)
+          local base_string = concat(base)
+          local theirs_string = concat(cur.theirs.content)
+
+          local content_string = him.API.merge(ours_string, base_string, theirs_string)
+
+          if content_string == nil then
+            content_string = him.API.greedyMerge(ours_string, base_string, theirs_string)
+          end
+
+          if content_string == nil then
+            return vim.notify("Merge failed")
+          end
+
+          for s in content_string:gmatch("[^\r\n]+") do
+            table.insert(content, s)
+          end
+
+          print(content)
+
+          api.nvim_buf_set_lines(curfile.bufnr, cur.first - 1, cur.last, false, content or {})
+
+          utils.set_cursor(main.id, unpack({
+            (content and #content or 0) + cur.first - 1,
+            content and content[1] and #content[#content] or 0
+          }))
+        end
+      end
+    end
   end
 end
 
