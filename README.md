@@ -1,3 +1,22 @@
+# What is this fork?
+
+Simply, it adds in [haxe-ij-merge](https://github.com/mclaughlinconnor/haxe-ij-merge)
+for automatically resolving conflicts (after you press a `<leader>cm`).
+
+Depends on the `luautf8` and `lrexlib-pcre2` lua modules. You can add these to your
+packer.nvim config by using:
+
+```lua
+use({
+  "mclaughlinconnor/diffview.nvim",
+  rocks = { "luautf8", "lrexlib-pcre2" },
+  requires = { "nvim-lua/plenary.nvim" },
+})
+```
+
+If you're using something other than packer, I think you'll have to use [theHamsta/nvim_rocks](https://github.com/theHamsta/nvim_rocks),
+or similar. I haven't tried using this, though.
+
 # Diffview.nvim
 
 > **Note:** This is an **actively maintained fork** of [sindrets/diffview.nvim](https://github.com/sindrets/diffview.nvim) with bug fixes and improvements applied. The original repository has not been updated since June 2024.
