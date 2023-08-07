@@ -360,8 +360,6 @@ function M.try_magic_merge()
         )
 
         if cur then
-          local content = {}
-
           local base = cur.base.content
           if base == nil then
             return vim.notify("Missing BASE, use diff3")
@@ -375,9 +373,13 @@ function M.try_magic_merge()
           local base_string = concat(base)
           local theirs_string = concat(cur.theirs.content)
 
+          -- The language server seems to think API.merge returns a table. It definitely doesn't --- the Haxe source
+          -- has string types everywhere, but the LS relies on dynamic type checking
+          ---@type string
           local content_string = him.API.merge(ours_string, base_string, theirs_string)
 
           if content_string == nil then
+            ---@type string
             content_string = him.API.greedyMerge(ours_string, base_string, theirs_string)
           end
 
@@ -385,11 +387,7 @@ function M.try_magic_merge()
             return vim.notify("Merge failed")
           end
 
-          for s in content_string:gmatch("[^\r\n]+") do
-            table.insert(content, s)
-          end
-
-          print(content)
+          local content = vim.split(content_string, [[\n]])
 
           api.nvim_buf_set_lines(curfile.bufnr, cur.first - 1, cur.last, false, content or {})
 
