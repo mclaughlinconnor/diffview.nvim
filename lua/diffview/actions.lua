@@ -369,9 +369,9 @@ function M.try_magic_merge()
             return table.concat(t, [[\n]])
           end
 
-          local ours_string = concat(cur.ours.content)
-          local base_string = concat(base)
-          local theirs_string = concat(cur.theirs.content)
+          local ours_string = concat(cur.ours.content or {})
+          local base_string = concat(base or {})
+          local theirs_string = concat(cur.theirs.content or {})
 
           -- The language server seems to think API.merge returns a table. It definitely doesn't --- the Haxe source
           -- has string types everywhere, but the LS relies on dynamic type checking
