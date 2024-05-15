@@ -14,8 +14,19 @@ use({
 })
 ```
 
-If you're using something other than packer, I think you'll have to use [theHamsta/nvim_rocks](https://github.com/theHamsta/nvim_rocks),
-or similar. I haven't tried using this, though.
+If you're using lazy.nvim, this works for me:
+
+```lua
+{
+  "camspiers/luarocks",
+  opts = {
+    rocks = {
+      "luautf8",
+      "lrexlib-pcre2",
+    },
+  },
+},
+```
 
 # Diffview.nvim
 
