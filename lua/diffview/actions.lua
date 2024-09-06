@@ -1,5 +1,4 @@
 require("diffview.bootstrap")
-local him = require("diffview.api.haxe-ij-merge")
 
 local async = require("diffview.async")
 local lazy = require("diffview.lazy")
@@ -362,32 +361,27 @@ function M.try_magic_merge()
         if cur then
           local base = cur.base.content
           if base == nil then
-            return vim.notify("Missing BASE, use diff3")
+            return vim.notify("No BASE")
           end
 
           local function concat(t)
-            return table.concat(t, [[\n]])
+            return table.concat(t, "\n")
           end
 
           local ours_string = concat(cur.ours.content or {})
           local base_string = concat(base or {})
           local theirs_string = concat(cur.theirs.content or {})
 
-          -- The language server seems to think API.merge returns a table. It definitely doesn't --- the Haxe source
-          -- has string types everywhere, but the LS relies on dynamic type checking
-          ---@type string
-          local content_string = him.API.merge(ours_string, base_string, theirs_string)
-
-          if content_string == nil then
-            ---@type string
-            content_string = him.API.greedyMerge(ours_string, base_string, theirs_string)
+          local content_string = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "cli", base_string, ours_string, theirs_string, 9 }, { text = true }):wait()
+          if content_string == nil or content_string.code ~= 0 then
+            content_string = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "cli", base_string, ours_string, theirs_string, 11 }, { text = true }):wait()
           end
 
-          if content_string == nil then
-            return vim.notify("Merge failed")
+          if content_string == nil or content_string.code ~= 0 then
+            return vim.notify("haxe-ij-merge failed")
           end
 
-          local content = vim.split(content_string, [[\n]])
+          local content = vim.split(content_string.stdout, "\n")
 
           api.nvim_buf_set_lines(curfile.bufnr, cur.first - 1, cur.last, false, content or {})
 
