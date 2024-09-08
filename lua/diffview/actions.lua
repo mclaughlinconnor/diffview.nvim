@@ -14,6 +14,8 @@ local vcs_utils = lazy.require("diffview.vcs.utils") ---@module "diffview.vcs.ut
 local Diff1 = lazy.access("diffview.scene.layouts.diff_1", "Diff1") ---@type Diff1|LazyModule
 local Diff2Hor = lazy.access("diffview.scene.layouts.diff_2_hor", "Diff2Hor") ---@type Diff2Hor|LazyModule
 local Diff2Ver = lazy.access("diffview.scene.layouts.diff_2_ver", "Diff2Ver") ---@type Diff2Ver|LazyModule
+local Diff2OursBase = lazy.access("diffview.scene.layouts.diff_2_ours_base", "Diff2OursBase") ---@type Diff2OursBase|LazyModule
+local Diff2TheirsBase = lazy.access("diffview.scene.layouts.diff_2_theirs_base", "Diff2TheirsBase") ---@type Diff2TheirsBase|LazyModule
 local Diff3 = lazy.access("diffview.scene.layouts.diff_3", "Diff3") ---@type Diff3|LazyModule
 local Diff3Hor = lazy.access("diffview.scene.layouts.diff_3_hor", "Diff3Hor") ---@type Diff3Hor|LazyModule
 local Diff3Ver = lazy.access("diffview.scene.layouts.diff_3_ver", "Diff3Ver") ---@type Diff3Hor|LazyModule
@@ -351,8 +353,9 @@ function M.try_magic_merge()
       ---@cast view StandardView
       local main = view.cur_layout:get_main_win()
       local curfile = main.file
+      -- print(main:is_valid(), curfile:is_valid())
 
-      if main:is_valid() and curfile:is_valid() then
+      if --[[ main:is_valid() and ]] curfile:is_valid() then
         local _, cur = vcs_utils.parse_conflicts(
           api.nvim_buf_get_lines(curfile.bufnr, 0, -1, false),
           main.id
@@ -539,6 +542,62 @@ function M.diffput(target)
       vim.cmd("diffput " .. bufnr)
     end
   end
+end
+
+local function switch_layout(layout)
+  local view = lib.get_current_view()
+
+  if not view then return end
+
+  local files, cur_file
+
+  if view:instanceof(DiffView.__get()) then
+    ---@cast view DiffView
+    cur_file = view.cur_entry
+
+    if cur_file then
+      files = cur_file.kind == "conflicting"
+          and view.files.conflicting
+          or utils.vec_join(view.panel.files.working, view.panel.files.staged)
+    end
+  else
+    return
+  end
+
+  for _, entry in ipairs(files) do
+    entry:convert_layout(layout.__get())
+  end
+
+  if cur_file then
+    local main = view.cur_layout:get_main_win()
+    local pos = api.nvim_win_get_cursor(main.id)
+    local was_focused = view.cur_layout:is_focused()
+
+    cur_file.layout.emitter:once("files_opened", function()
+      utils.set_cursor(main.id, unpack(pos))
+      if not was_focused then view.cur_layout:sync_scroll() end
+    end)
+
+    view:set_file(cur_file, false)
+    main = view.cur_layout:get_main_win()
+
+    if was_focused then main:focus() end
+  end
+end
+
+function M.normal_layout()
+  print("normal")
+  switch_layout(Diff3Ver)
+end
+
+function M.base_ours_layout()
+  print("base")
+  switch_layout(Diff2OursBase)
+end
+
+function M.base_theirs_layout()
+  print("theirs")
+  switch_layout(Diff2TheirsBase)
 end
 
 function M.cycle_layout()
