@@ -350,47 +350,39 @@ function M.try_magic_merge()
     if view and view:instanceof(StandardView.__get()) then
       ---@cast view StandardView
       local main = view.cur_layout:get_main_win()
-      local curfile = main.file
 
-      if main:is_valid() and curfile:is_valid() then
-        local _, cur = vcs_utils.parse_conflicts(
-          api.nvim_buf_get_lines(curfile.bufnr, 0, -1, false),
-          main.id
-        )
+      local left
+      local base
+      local right
 
-        if cur then
-          local base = cur.base.content
-          if base == nil then
-            return vim.notify("No BASE")
-          end
-
-          local function concat(t)
-            return table.concat(t, "\n")
-          end
-
-          local ours_string = concat(cur.ours.content or {})
-          local base_string = concat(base or {})
-          local theirs_string = concat(cur.theirs.content or {})
-
-          local content_string = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "cli", base_string, ours_string, theirs_string, 9 }, { text = true }):wait()
-          if content_string == nil or content_string.code ~= 0 then
-            content_string = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "cli", base_string, ours_string, theirs_string, 11 }, { text = true }):wait()
-          end
-
-          if content_string == nil or content_string.code ~= 0 then
-            return vim.notify("haxe-ij-merge failed")
-          end
-
-          local content = vim.split(content_string.stdout, "\n")
-
-          api.nvim_buf_set_lines(curfile.bufnr, cur.first - 1, cur.last, false, content or {})
-
-          utils.set_cursor(main.id, unpack({
-            (content and #content or 0) + cur.first - 1,
-            content and content[1] and #content[#content] or 0
-          }))
+      for _, window in ipairs(view.cur_layout.windows) do
+        if window.file.symbol == "a" then
+          left = window.file
+        elseif window.file.symbol == "b" then
+          base = window.file
+        elseif window.file.symbol == "c" then
+          right = window.file
         end
       end
+
+      if left == nil or base == nil or right == nil then
+        return
+      end
+
+      local leftContent = table.concat(api.nvim_buf_get_lines(left.bufnr, 0, -1, false), "\n")
+      local baseContent = table.concat(api.nvim_buf_get_lines(base.bufnr, 0, -1, false), "\n")
+      local rightContent = table.concat(api.nvim_buf_get_lines(right.bufnr, 0, -1, false), "\n")
+
+      local line = unpack(vim.api.nvim_win_get_cursor(main.id))
+
+      local contentString = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 9 }, { text = true }):wait()
+      if contentString == nil or contentString.code ~= 0 then
+        contentString = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 11 }, { text = true }):wait()
+      end
+
+      local content = vim.split(contentString.stdout, "\n");
+
+      api.nvim_buf_set_lines(base.bufnr, 0, -1, false, content or {})
     end
   end
 end
