@@ -22,6 +22,7 @@ local Diff3Mixed = lazy.access("diffview.scene.layouts.diff_3_mixed", "Diff3Mixe
 local Diff3Ver = lazy.access("diffview.scene.layouts.diff_3_ver", "Diff3Ver") ---@type Diff3Hor|LazyModule
 local Diff4 = lazy.access("diffview.scene.layouts.diff_4", "Diff4") ---@type Diff4|LazyModule
 local Diff4Mixed = lazy.access("diffview.scene.layouts.diff_4_mixed", "Diff4Mixed") ---@type Diff4Mixed|LazyModule
+local Diff3Base = lazy.access("diffview.scene.layouts.diff_3_base", "Diff3Base") ---@type Diff3Base|LazyModule
 local utils = lazy.require("diffview.utils") ---@module "diffview.utils"
 
 local M = {}
@@ -44,7 +45,7 @@ end
 -- not by direct user configuration. The `LayoutName` alias below still
 -- includes them so `name_to_layout` can resolve them internally.
 ---@alias DiffviewStandardLayout "diff1_plain"|"diff1_inline"|"diff2_horizontal"|"diff2_vertical"
----@alias DiffviewMergeLayout "diff1_plain"|"diff3_horizontal"|"diff3_vertical"|"diff3_mixed"|"diff4_mixed"
+---@alias DiffviewMergeLayout "diff1_plain"|"diff3_horizontal"|"diff3_vertical"|"diff3_mixed"|"diff4_mixed"|"diff3_base"
 ---@alias DiffviewInferredLayout -1
 ---@alias DiffviewOneSidedLayout "default"|"raw"
 
@@ -115,7 +116,6 @@ local conflict_keymaps = {
   { "n", "<leader>ct",  actions.conflict_choose("theirs"),      { desc = "Choose the THEIRS version of a conflict" } },
   { "n", "<leader>cb",  actions.conflict_choose("base"),        { desc = "Choose the BASE version of a conflict" } },
   { "n", "<leader>ca",  actions.conflict_choose("all"),         { desc = "Choose all the versions of a conflict" } },
-  { "n", "<leader>cm",  actions.try_magic_merge(),              { desc = "Attempt to automatically merge all conflicts" } },
   { "n", "dx",          actions.conflict_choose("none"),        { desc = "Delete the conflict region" } },
   { "n", "<leader>cO",  actions.conflict_choose_all("ours"),    { desc = "Choose the OURS version of a conflict for the whole file" } },
   { "n", "<leader>cT",  actions.conflict_choose_all("theirs"),  { desc = "Choose the THEIRS version of a conflict for the whole file" } },
@@ -969,6 +969,7 @@ end
 ---       | "diff3_vertical"
 ---       | "diff3_mixed"
 ---       | "diff4_mixed"
+---       | "diff3_base"
 
 local layout_map = {
   diff1_plain = Diff1,
@@ -984,6 +985,7 @@ local layout_map = {
   diff3_vertical = Diff3Ver,
   diff3_mixed = Diff3Mixed,
   diff4_mixed = Diff4Mixed,
+  diff3_base = Diff3Base,
 }
 
 ---@param layout_name LayoutName
@@ -1567,7 +1569,7 @@ function M.setup(user_config)
   -- any unresolvable entry).
   local standard_concrete = { "diff1_plain", "diff1_inline", "diff2_horizontal", "diff2_vertical" }
   local merge_concrete =
-    { "diff1_plain", "diff3_horizontal", "diff3_vertical", "diff3_mixed", "diff4_mixed" }
+    { "diff1_plain", "diff3_horizontal", "diff3_vertical", "diff3_mixed", "diff4_mixed", "diff3_base" }
   local standard_layouts = utils.vec_join(standard_concrete, -1)
   local merge_layouts = utils.vec_join(merge_concrete, -1)
   local layouts_for_kind = {
