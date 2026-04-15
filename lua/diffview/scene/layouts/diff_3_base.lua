@@ -5,6 +5,7 @@ local oop = require("diffview.oop")
 
 local api = vim.api
 local await, pawait = async.await, async.pawait
+local fmt = string.format
 local logger = DiffviewGlobal.logger
 
 local M = {}
@@ -26,7 +27,6 @@ end
 ---@param self Diff3Base
 ---@param pivot integer?
 Diff3Base.create = async.void(function(self, pivot)
-  print("diff3bvase")
   self:create_pre()
   local curwin
 
@@ -93,7 +93,7 @@ Diff3Base.create = async.void(function(self, pivot)
     print(fmt("Failed to create diff buffer: '%s:%s'", self.b.file.rev, self.b.file.path), true)
   end
 
-  local baseText = vim.system({"java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "getSide", self.b.file.path, "base", "1"}):wait()
+  local baseText = vim.system({"java", "-jar", "/Users/connorveryconnect.com/Downloads/haxe-ij-merge/haxe-ij-merge.jar", "getSide", self.b.file.path, "base", "1"}):wait()
   vim.api.nvim_buf_set_lines(self.b.file.bufnr, 0, -1, false, vim.split(baseText.stdout, "\n"))
 
   api.nvim_win_close(pivot, true)
@@ -108,10 +108,10 @@ Diff3Base.use_entry = async.void(function(self, entry)
   assert(layout:instanceof(Diff4))
 
   -- This Diff3 is actually a Diff4 in disguise so that I can get the BASE, which means it needs 4 files still
-  self:set_file_a(layout.a.file)
-  self:set_file_b(layout.b.file)
-  self:set_file_c(layout.c.file)
-  self:set_file_d(layout.d.file)
+  self:set_file_for("a", layout.a.file)
+  self:set_file_for("b", layout.b.file)
+  self:set_file_for("c", layout.c.file)
+  self:set_file_for("d", layout.d.file)
 
   if self:is_valid() then
     await(self:open_files())
