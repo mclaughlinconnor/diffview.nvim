@@ -676,9 +676,9 @@ function M.try_magic_merge()
 
       local line = unpack(vim.api.nvim_win_get_cursor(main.id))
 
-      local contentString = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 9 }, { text = true }):wait()
+      local contentString = vim.system({ "java", "-jar", "/Users/connorveryconnect.com/Downloads/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 9 }, { text = true }):wait()
       if contentString == nil or contentString.code ~= 0 then
-        contentString = vim.system({ "java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 11 }, { text = true }):wait()
+        contentString = vim.system({ "java", "-jar", "/Users/connorveryconnect.com/Downloads/haxe-ij-merge/haxe-ij-merge.jar", "mergeatcursor", baseContent, leftContent, rightContent, line, 11 }, { text = true }):wait()
       end
 
       local content = vim.split(contentString.stdout, "\n");

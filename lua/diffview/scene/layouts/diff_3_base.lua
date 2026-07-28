@@ -74,7 +74,7 @@ Diff3Base.create = async.void(function(self, pivot)
 
 
   local get_data_him = function(_kind, path, pos)
-    local text = vim.system({"java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "getSide", path, pos, "1"}):wait()
+    local text = vim.system({"java", "-jar", "/Users/connorveryconnect.com/Downloads/haxe-ij-merge/haxe-ij-merge.jar", "getSide", path, pos, "1"}):wait()
     return vim.split(text.stdout, "\n")
   end
 
@@ -93,7 +93,7 @@ Diff3Base.create = async.void(function(self, pivot)
     print(fmt("Failed to create diff buffer: '%s:%s'", self.b.file.rev, self.b.file.path), true)
   end
 
-  local baseText = vim.system({"java", "-jar", "/Users/connorveryconnect.com/Downloads/haxe-ij-merge/haxe-ij-merge.jar", "getSide", self.b.file.path, "base", "1"}):wait()
+  local baseText = vim.system({"java", "-jar", "/home/connor/Development/haxe-ij-merge/haxe-ij-merge.jar", "getSide", self.b.file.path, "base", "1"}):wait()
   vim.api.nvim_buf_set_lines(self.b.file.bufnr, 0, -1, false, vim.split(baseText.stdout, "\n"))
 
   api.nvim_win_close(pivot, true)
